@@ -1,0 +1,40 @@
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+@left-Width: 200px;
+#root {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+
+  .leftPanel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: @left-Width;
+    height: auto;
+    max-height: 100%;
+    z-index: 2;
+    background: beige;
+  }
+
+  .mainContent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.button {
+  cursor: pointer;
+}

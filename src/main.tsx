@@ -1,9 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import './main.less';
 
+import expand from '@/assets/expand.png';
 import examples from './examples';
 import { getQueryParam } from './utils';
+
 
 const App: React.FC<{
   List: Array<{
@@ -14,6 +16,8 @@ const App: React.FC<{
   }>;
 }> = ({ List }) => {
   const canvasRef = useRef(null);
+
+  const [toggle, setToggle] = useState(true);
 
   useEffect(() => {
     const curTitle = getQueryParam('title');
@@ -27,10 +31,21 @@ const App: React.FC<{
 
   return (
     <>
-      <aside className="leftPanel">
+      <aside className={`leftPanel ${toggle ? '' : 'asideHidden'}`}>
         <header>
           <a href="?">Webgl Demos</a>
         </header>
+        <span
+          style={{
+            backgroundImage: `url(${expand})`,
+          }}
+          className={`${toggle ? 'rotate-180' : ''}`}
+          onClick={
+          () => {
+            setToggle(!toggle);
+          }
+        }
+        />
         <ol>
           {List.map(({ title, handler }) => (
             <li key={title}>

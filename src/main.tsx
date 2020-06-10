@@ -6,7 +6,6 @@ import expand from '@/assets/expand.png';
 import examples from './examples';
 import { getQueryParam } from './utils';
 
-
 const App: React.FC<{
   List: Array<{
     title: string;
@@ -27,7 +26,7 @@ const App: React.FC<{
       document.title = curItem.title;
       curItem.handler.render(canvasRef.current);
     }
-  });
+  }, []);
 
   return (
     <>
@@ -39,12 +38,13 @@ const App: React.FC<{
           style={{
             backgroundImage: `url(${expand})`,
           }}
+          aria-label="toggle"
+          role="button"
+          tabIndex={0}
           className={`${toggle ? 'rotate-180' : ''}`}
-          onClick={
-          () => {
+          onClick={() => {
             setToggle(!toggle);
-          }
-        }
+          }}
         />
         <ol>
           {List.map(({ title, handler }) => (

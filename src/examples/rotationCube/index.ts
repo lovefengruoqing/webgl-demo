@@ -5,6 +5,7 @@ import {
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
 import { vetexShaderSource, fragmentShaderSource } from './source';
+import { doPreparedWorked } from '../custom';
 // import { GUI } from 'dat.gui'
 
 type ProgramInfo = {
@@ -297,16 +298,9 @@ const drawScene = (
 };
 
 const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => {
-  const gl = canvas.getContext('webgl');
-
-  const vetexShader = createShader(gl, gl.VERTEX_SHADER, vetexShaderSource);
-  const fragmentShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    fragmentShaderSource,
-  );
-
-  const program = createProgram(gl, vetexShader, fragmentShader);
+  const {
+    gl, program,
+  } = doPreparedWorked({ canvas, vetexShaderSource, fragmentShaderSource });
 
   const programInfo: ProgramInfo = {
     program,

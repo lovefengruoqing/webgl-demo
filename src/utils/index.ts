@@ -69,7 +69,9 @@ export const fetchT = (url: RequestInfo, options: RequestInit, timeout = 7000) =
   new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeout)),
 ]);
 
-export const loadTexture = (gl: WebGLRenderingContext, url: string) => new Promise((reslove, reject) => {
+export const loadTexture = (
+  gl: WebGLRenderingContext, url: string,
+) => new Promise((reslove) => {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -118,9 +120,12 @@ export const loadTexture = (gl: WebGLRenderingContext, url: string) => new Promi
     });
 });
 
+export const loadTextures = async (
+  gl: WebGLRenderingContext, urls: Array<string>,
+) => Promise.all(urls.map((url) => loadTexture(gl, url)));
+
 /**
- * 获取location中指定key的value
- * @param variable
+ * get the value of location by key
  */
 export function getQueryParam(variable: string) {
   const query = window.location.search.substring(1);

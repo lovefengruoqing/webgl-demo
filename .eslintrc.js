@@ -35,6 +35,8 @@ module.exports = {
     "no-throw-literal": 0,
     "no-console": 0,
     "import/prefer-default-export": 0,
-    "jsx-a11y/click-events-have-key-events": 0
+    "jsx-a11y/click-events-have-key-events": 0,
+    "no-underscore-dangle": 0,
+    "max-classes-per-file": 0
   },
 };

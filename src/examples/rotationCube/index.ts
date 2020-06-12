@@ -1,6 +1,6 @@
 
 import {
-  createShader, createProgram, resize, loadTexture,
+  resize, loadTextures,
 } from '@/utils/';
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
@@ -297,6 +297,7 @@ const drawScene = (
   }
 };
 
+
 const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => {
   const {
     gl, program,
@@ -318,22 +319,29 @@ const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => 
 
   const buffers = initBuffer(gl);
 
-  // const url = 'https://cn.bing.com/th?id=OHR.LionSurfing_ZH-CN7369892268_UHD.jpg&pid=hp&w=3840&h=2160&rs=1&c=4&r=0';
+  const url = 'https://cn.bing.com/th?id=OHR.LionSurfing_ZH-CN7369892268_UHD.jpg&pid=hp&w=3840&h=2160&rs=1&c=4&r=0';
   // const url = 'https://www.baidu.com/img/flexible/logo/pc/result@2.png';
-  const texture = await loadTexture(gl, huaji);
+  const textures = await loadTextures(gl, [huaji, url]);
 
-  drawScene(gl, programInfo, buffers, 0, texture);
+  let texture = textures[Math.random() > 0.9 ? 0 : 1];
 
   if (autoRotate) {
     let prev: number | null = null;
+    let times: number = 0;
+    let bool = true;
     const doRotate = (timestamp: number) => {
+      times += 1;
+      if (times % 60 === 0) bool = !bool;
       if (!prev) prev = timestamp;
       const progress = (timestamp - prev) / 1000;
       prev = timestamp;
+      texture = textures[bool ? 0 : 1];
       drawScene(gl, programInfo, buffers, progress, texture);
       requestAnimationFrame(doRotate);
     };
     requestAnimationFrame(doRotate);
+  } else {
+    drawScene(gl, programInfo, buffers, 0, texture);
   }
 };
 

@@ -1,5 +1,5 @@
 import { resize } from '@/utils';
-import GuiController from '@/utils/GuiController';
+import MyGui from '@/utils/MyGui';
 import { vetexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
@@ -41,7 +41,7 @@ class Rectangle {
   }
 }
 
-const { gui } = GuiController;
+const { gui } = MyGui;
 
 const render = (canvas: HTMLCanvasElement) => {
   const { gl, program } = doPreparedWorked(
@@ -57,6 +57,8 @@ const render = (canvas: HTMLCanvasElement) => {
 
 
   const rectangle = new Rectangle(200, 200, 0, 0, [0, 0, 0, 1]);
+
+  MyGui.dispose();
   gui.addColor(rectangle, 'color');
   gui.add(rectangle, 'x', 0, gl.canvas.width);
   gui.add(rectangle, 'y', 0, gl.canvas.height);

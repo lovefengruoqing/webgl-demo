@@ -4,7 +4,7 @@ import {
 } from '@/utils/';
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
-import GuiController from '@/utils/GuiController';
+import MyGui from '@/utils/MyGui';
 import { vetexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
@@ -28,7 +28,7 @@ type buffersInfo = {
   indices: WebGLBuffer;
 }
 
-const { gui } = GuiController;
+const { gui } = MyGui;
 
 const initBuffer = (gl: WebGLRenderingContext) => {
   const pList = [
@@ -361,6 +361,7 @@ const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => 
   const url = 'https://cn.bing.com/th?id=OHR.LionSurfing_ZH-CN7369892268_UHD.jpg&pid=hp&w=3840&h=2160&rs=1&c=4&r=0';
   const texturePool = new TexturePool(gl, [huaji, url]);
 
+  MyGui.dispose();
   gui.add(texturePool, 'cur', texturePool.urls);
 
   let texture = texturePool.getCurTexture();

@@ -7,6 +7,7 @@
     "start": "webpack-dev-server --open --config ./build/webpack.dev.js",
     "watch": "webpack --watch",
     "build": "webpack --config ./build/webpack.prod.js",
+    "deploy": "gh-pages -d dist",
     "server": "node server.js"
   },
   "babel": {
@@ -42,6 +43,7 @@
     "eslint-plugin-react-hooks": "^2.5.1",
     "express": "^4.17.1",
     "file-loader": "^6.0.0",
+    "gh-pages": "^3.0.0",
     "html-webpack-plugin": "^4.3.0",
     "less-loader": "^6.1.0",
     "source-map-loader": "^1.0.0",

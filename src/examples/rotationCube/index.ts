@@ -1,14 +1,12 @@
-import { GUI } from 'dat.gui';
+
 import {
   resize, loadTexture,
 } from '@/utils/';
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
+import GuiController from '@/utils/GuiController';
 import { vetexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
-// import { GUI } from 'dat.gui'
-
-const gui = new GUI();
 
 type ProgramInfo = {
   program: WebGLProgram;
@@ -30,6 +28,7 @@ type buffersInfo = {
   indices: WebGLBuffer;
 }
 
+const { gui } = GuiController;
 
 const initBuffer = (gl: WebGLRenderingContext) => {
   const pList = [

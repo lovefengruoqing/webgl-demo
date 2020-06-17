@@ -1,9 +1,7 @@
 import { resize } from '@/utils';
-import { GUI } from 'dat.gui';
+import GuiController from '@/utils/GuiController';
 import { vetexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
-
-const gui = new GUI();
 
 type AColorType = [number, number, number, number];
 
@@ -42,6 +40,8 @@ class Rectangle {
     ];
   }
 }
+
+const { gui } = GuiController;
 
 const render = (canvas: HTMLCanvasElement) => {
   const { gl, program } = doPreparedWorked(

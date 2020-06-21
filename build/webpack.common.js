@@ -7,7 +7,6 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      // title: "Production",
       template: "./src/index.html",
     }),
   ],
@@ -17,22 +16,27 @@ module.exports = {
   },
   module: {
     rules: [
-      // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-      { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
-      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
+      {
+        test: /\.ts(x?)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "ts-loader",
+          },
+        ],
+      },
       { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
-      // { test: /\.(js)$/, use: "babel-loader" },
       {
         test: /\.less$/,
         use: [
           {
-            loader: 'style-loader',
+            loader: "style-loader",
           },
           {
-            loader: 'css-loader',
+            loader: "css-loader",
           },
           {
-            loader: 'less-loader',
+            loader: "less-loader",
             options: {
               lessOptions: {
                 strictMath: true,

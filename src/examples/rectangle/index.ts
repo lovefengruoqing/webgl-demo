@@ -1,9 +1,45 @@
 import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
-import { mat3 } from 'gl-matrix';
 import { vetexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
+type AColorType = [number, number, number, number];
+
+class Rectangle {
+  w: number;
+
+  h: number;
+
+  x: number;
+
+  y: number;
+
+  color: AColorType;
+
+  constructor(
+    w: number = 10, h: number = 10, x: number = 0, y: number = 0, color: AColorType = [0, 0, 0, 1],
+  ) {
+    this.w = w;
+    this.h = h;
+    this.x = x;
+    this.y = y;
+    this.color = color;
+  }
+
+  public getPosition() {
+    const {
+      x, y, w, h,
+    } = this;
+    return [
+      x, y,
+      x, y + h,
+      x + w, y,
+      x, y + h,
+      x + w, y + h,
+      x + w, y,
+    ];
+  }
+}
 
 const { gui } = MyGui;
 
@@ -16,22 +52,21 @@ const render = (canvas: HTMLCanvasElement) => {
 
   // look up where the vertex data needs to go.
   const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-  const matrixUniformLocation = gl.getUniformLocation(program, 'u_matrix');
+  const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
+  const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
 
-  const config = {
-    x: 200,
-    y: 150,
-    angle: 0,
-    scaleX: 1,
-    scaleY: 1,
-  };
+
+  const rectangle = new Rectangle(200, 200, 0, 0, [0, 0, 0, 1]);
 
   MyGui.dispose();
-  gui.add(config, 'x', 0, gl.canvas.width);
-  gui.add(config, 'y', 0, gl.canvas.height);
-  gui.add(config, 'angle', 0, 360);
-  gui.add(config, 'scaleX', -5, 5);
-  gui.add(config, 'scaleY', -5, 5);
+  gui.addColor(rectangle, 'color');
+  gui.add(rectangle, 'x', 0, gl.canvas.width);
+  gui.add(rectangle, 'y', 0, gl.canvas.height);
+  gui.add(rectangle, 'w', 0, gl.canvas.width);
+  gui.add(rectangle, 'h', 0, gl.canvas.height);
+
+  // console.log(rectangle);
+
 
   const draw = () => {
     // Create a buffer and put three 2d clip space points in it
@@ -41,11 +76,7 @@ const render = (canvas: HTMLCanvasElement) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
 
-    const positions = [
-      0, -100,
-      150, 125,
-      -175, 100,
-    ];
+    const positions = rectangle.getPosition();
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     resize(gl);
@@ -59,6 +90,12 @@ const render = (canvas: HTMLCanvasElement) => {
 
     // Tell it to use our program (pair of shaders)
     gl.useProgram(program);
+
+    gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+    const color = rectangle.color.map(
+      (v, index) => (index < 3 ? v / 255 : v),
+    ) as AColorType;
+    gl.uniform4f(colorUniformLocation, ...color);
 
     // Turn on the attribute
     gl.enableVertexAttribArray(positionAttributeLocation);
@@ -75,22 +112,10 @@ const render = (canvas: HTMLCanvasElement) => {
     gl.vertexAttribPointer(
       positionAttributeLocation, size, type, normalize, stride, offset,
     );
-
-    // Compute the matrix
-    const matrix: mat3 = mat3.create();
-    mat3.projection(matrix, gl.canvas.width, gl.canvas.height);
-    mat3.translate(matrix, matrix, [config.x, config.y]);
-    mat3.rotate(matrix, matrix, config.angle);
-    mat3.scale(matrix, matrix, [config.scaleX, config.scaleY]);
-
-    // Set the matrix.
-    gl.uniformMatrix3fv(matrixUniformLocation, false, matrix);
-
-
     // draw
     const primitiveType = gl.TRIANGLES;
     offset = 0;
-    const count = 3;
+    const count = positions.length / size;
     gl.drawArrays(primitiveType, offset, count);
 
     requestAnimationFrame(draw);

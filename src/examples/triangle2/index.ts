@@ -7,6 +7,31 @@ import { doPreparedWorked } from '../custom';
 
 const { gui } = MyGui;
 
+const setColor = (gl: WebGLRenderingContext) => {
+  const r1 = Math.random();
+  const g1 = Math.random();
+  const b1 = Math.random();
+
+  const r2 = Math.random();
+  const g2 = Math.random();
+  const b2 = Math.random();
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    r1, b1, g1, 1,
+    r1, b1, g1, 1,
+    r1, b1, g1, 1,
+    r2, b2, g2, 1,
+    r2, b2, g2, 1,
+    r2, b2, g2, 1,
+    Math.random(), Math.random(), Math.random(), 1,
+    Math.random(), Math.random(), Math.random(), 1,
+    Math.random(), Math.random(), Math.random(), 1,
+    Math.random(), Math.random(), Math.random(), 1,
+    Math.random(), Math.random(), Math.random(), 1,
+    Math.random(), Math.random(), Math.random(), 1,
+  ]), gl.STATIC_DRAW);
+};
+
 const render = (canvas: HTMLCanvasElement) => {
   const { gl, program } = doPreparedWorked(
     { canvas, vetexShaderSource, fragmentShaderSource },
@@ -16,6 +41,7 @@ const render = (canvas: HTMLCanvasElement) => {
 
   // look up where the vertex data needs to go.
   const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+  const colorAttributeLocation = gl.getAttribLocation(program, 'a_color');
   const matrixUniformLocation = gl.getUniformLocation(program, 'u_matrix');
 
   const config = {
@@ -26,28 +52,28 @@ const render = (canvas: HTMLCanvasElement) => {
     scaleY: 1,
   };
 
-  MyGui.dispose();
-  gui.add(config, 'x', 0, gl.canvas.width);
-  gui.add(config, 'y', 0, gl.canvas.height);
-  gui.add(config, 'angle', 0, 360);
-  gui.add(config, 'scaleX', -5, 5);
-  gui.add(config, 'scaleY', -5, 5);
+  // Create a buffer and put three 2d clip space points in it
+  const positionBuffer = gl.createBuffer();
+
+  // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+
+  const positions = [
+    -150, -100,
+    150, -100,
+    -150, 100,
+    150, -100,
+    -150, 100,
+    150, 100,
+  ];
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+  const colorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  setColor(gl);
 
   const draw = () => {
-    // Create a buffer and put three 2d clip space points in it
-    const positionBuffer = gl.createBuffer();
-
-    // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-
-    const positions = [
-      0, -100,
-      150, 125,
-      -175, 100,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
     resize(gl);
 
     // Tell WebGL how to convert from clip space to pixels
@@ -76,11 +102,19 @@ const render = (canvas: HTMLCanvasElement) => {
       positionAttributeLocation, size, type, normalize, stride, offset,
     );
 
+    // color attribute
+    gl.enableVertexAttribArray(colorAttributeLocation);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+
+    gl.vertexAttribPointer(
+      colorAttributeLocation, 4, gl.FLOAT, false, 0, 24 * Float32Array.BYTES_PER_ELEMENT,
+    );
+
     // Compute the matrix
     const matrix: mat3 = mat3.create();
     mat3.projection(matrix, gl.canvas.width, gl.canvas.height);
     mat3.translate(matrix, matrix, [config.x, config.y]);
-    mat3.rotate(matrix, matrix, config.angle);
+    mat3.rotate(matrix, matrix, (config.angle / 180) * Math.PI);
     mat3.scale(matrix, matrix, [config.scaleX, config.scaleY]);
 
     // Set the matrix.
@@ -90,13 +124,27 @@ const render = (canvas: HTMLCanvasElement) => {
     // draw
     const primitiveType = gl.TRIANGLES;
     offset = 0;
-    const count = 3;
+    const count = 6;
     gl.drawArrays(primitiveType, offset, count);
-
-    requestAnimationFrame(draw);
   };
+  draw();
 
-  requestAnimationFrame(draw);
+  MyGui.dispose();
+  gui.add(config, 'x', 0, gl.canvas.width).onChange(() => {
+    draw();
+  });
+  gui.add(config, 'y', 0, gl.canvas.height).onChange(() => {
+    draw();
+  });
+  gui.add(config, 'angle', 0, 360).onChange(() => {
+    draw();
+  });
+  gui.add(config, 'scaleX', -5, 5).onChange(() => {
+    draw();
+  });
+  gui.add(config, 'scaleY', -5, 5).onChange(() => {
+    draw();
+  });
 };
 
 const dispose = () => {

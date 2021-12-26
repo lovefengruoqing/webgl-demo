@@ -2,7 +2,7 @@ import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
 import { mat3 } from 'gl-matrix';
 import leaves from '@/assets/leaves.jpg';
-import { vetexShaderSource, fragmentShaderSource } from './source';
+import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
 const { gui } = MyGui;
@@ -14,7 +14,7 @@ function computeKernelWeight(kernel: number[]) :number {
 
 const render = (canvas: HTMLCanvasElement) => {
   const { gl, program } = doPreparedWorked(
-    { canvas, vetexShaderSource, fragmentShaderSource },
+    { canvas, vertexShaderSource, fragmentShaderSource },
   );
 
   resize(gl);

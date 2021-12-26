@@ -1,4 +1,4 @@
-export const vetexShaderSource = `
+export const vertexShaderSource = `
 attribute vec2 a_position;
 attribute vec2 a_texCoord;
 

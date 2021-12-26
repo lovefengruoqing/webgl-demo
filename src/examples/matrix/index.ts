@@ -1,9 +1,12 @@
 import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
-import { mat3 } from 'gl-matrix';
+import FWord from '@/geometries/FWord';
+import m3 from '@/utils/m3';
 import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
+
+type AColorType = [number, number, number, number];
 
 const { gui } = MyGui;
 
@@ -14,40 +17,24 @@ const render = (canvas: HTMLCanvasElement) => {
 
   resize(gl);
 
-  // look up where the vertex data needs to go.
   const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
   const matrixUniformLocation = gl.getUniformLocation(program, 'u_matrix');
+  const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
 
-  const config = {
-    x: 200,
-    y: 150,
-    angle: 0,
-    scaleX: 1,
-    scaleY: 1,
-  };
-
+  const fWord = new FWord({});
   MyGui.dispose();
-  gui.add(config, 'x', 0, gl.canvas.width);
-  gui.add(config, 'y', 0, gl.canvas.height);
-  gui.add(config, 'angle', 0, 360);
-  gui.add(config, 'scaleX', -5, 5);
-  gui.add(config, 'scaleY', -5, 5);
+  gui.addColor(fWord, 'color');
+  gui.add(fWord, 'translationX', 0, gl.canvas.width);
+  gui.add(fWord, 'translationY', 0, gl.canvas.height);
+  gui.add(fWord, 'scaleX', -100, 100);
+  gui.add(fWord, 'scaleY', -100, 100);
+  gui.add(fWord, 'rotation', 0, Math.PI * 2, 0.01);
 
-  const draw = () => {
-    // Create a buffer and put three 2d clip space points in it
-    const positionBuffer = gl.createBuffer();
+  // const obj = { angleInRadians: 0 };
 
-    // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  const positionBuffer = gl.createBuffer();
 
-
-    const positions = [
-      0, -100,
-      150, 125,
-      -175, 100,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
+  const doAnimate = () => {
     resize(gl);
 
     // Tell WebGL how to convert from clip space to pixels
@@ -60,13 +47,17 @@ const render = (canvas: HTMLCanvasElement) => {
     // Tell it to use our program (pair of shaders)
     gl.useProgram(program);
 
-    // Turn on the attribute
+    const color = fWord.color.map(
+      (v, index) => (index < 3 ? v / 255 : v),
+    ) as AColorType;
+    gl.uniform4f(colorUniformLocation, ...color);
+
     gl.enableVertexAttribArray(positionAttributeLocation);
-
-    // Bind the position buffer.
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    fWord.render(gl);
 
-    // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
+    // 调整位置
+
     const size = 2; // 2 components per iteration
     const type = gl.FLOAT; // the data is 32bit floats
     const normalize = false; // don't normalize the data
@@ -76,31 +67,33 @@ const render = (canvas: HTMLCanvasElement) => {
       positionAttributeLocation, size, type, normalize, stride, offset,
     );
 
-    // Compute the matrix
-    const matrix: mat3 = mat3.create();
-    mat3.projection(matrix, gl.canvas.width, gl.canvas.height);
-    mat3.translate(matrix, matrix, [config.x, config.y]);
-    mat3.rotate(matrix, matrix, config.angle);
-    mat3.scale(matrix, matrix, [config.scaleX, config.scaleY]);
+    // Compute the matrices
+    const projectionMatrix = m3.projection(
+      gl.canvas.width, gl.canvas.height,
+    );
+    let matrix = m3.translate(projectionMatrix, fWord.translationX, fWord.translationY);
+    matrix = m3.scale(matrix, fWord.scaleX, fWord.scaleY);
+    matrix = m3.rotate(matrix, fWord.rotation);
 
     // Set the matrix.
     gl.uniformMatrix3fv(matrixUniformLocation, false, matrix);
 
-
     // draw
     const primitiveType = gl.TRIANGLES;
     offset = 0;
-    const count = 3;
+    const count = 6 * 3;
     gl.drawArrays(primitiveType, offset, count);
 
-    requestAnimationFrame(draw);
+    requestAnimationFrame(doAnimate);
   };
 
-  requestAnimationFrame(draw);
+  requestAnimationFrame(doAnimate);
 };
 
 const dispose = () => {
   console.log('dispose!');
 };
 
-export default { render, dispose };
+export default {
+  render, dispose,
+};

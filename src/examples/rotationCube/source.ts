@@ -1,4 +1,4 @@
-export const vetexShaderSource: string = `
+export const vertexShaderSource: string = `
 attribute vec4 aVertexPosition;
 // attribute vec4 aVertexColor;
 attribute vec2 aTextureCoord;

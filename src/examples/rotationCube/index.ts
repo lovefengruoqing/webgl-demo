@@ -5,7 +5,7 @@ import {
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
 import MyGui from '@/utils/MyGui';
-import { vetexShaderSource, fragmentShaderSource } from './source';
+import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
 type ProgramInfo = {
@@ -340,7 +340,7 @@ class TexturePool {
 const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => {
   const {
     gl, program,
-  } = doPreparedWorked({ canvas, vetexShaderSource, fragmentShaderSource });
+  } = doPreparedWorked({ canvas, vertexShaderSource, fragmentShaderSource });
 
   const programInfo: ProgramInfo = {
     program,

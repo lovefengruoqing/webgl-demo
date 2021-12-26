@@ -1,5 +1,5 @@
 
-export const vetexShaderSource = `
+export const vertexShaderSource = `
 // an attribute will receive data from a buffer
 attribute vec2 a_position;
 uniform vec2 u_resolution;

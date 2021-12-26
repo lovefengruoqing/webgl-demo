@@ -1,6 +1,6 @@
 import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
-import { vetexShaderSource, fragmentShaderSource } from './source';
+import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
 type AColorType = [number, number, number, number];
@@ -45,7 +45,7 @@ const { gui } = MyGui;
 
 const render = (canvas: HTMLCanvasElement) => {
   const { gl, program } = doPreparedWorked(
-    { canvas, vetexShaderSource, fragmentShaderSource },
+    { canvas, vertexShaderSource, fragmentShaderSource },
   );
 
   resize(gl);

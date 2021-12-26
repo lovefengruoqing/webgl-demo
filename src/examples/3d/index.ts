@@ -146,7 +146,7 @@ const render = (canvas: HTMLCanvasElement) => {
 
 
     for (let ii = 0; ii < numFs; ++ii) {
-      const angle = ii * Math.PI * 2 / numFs;
+      const angle = ((ii * Math.PI) * 2) / numFs;
       const x = Math.cos(angle) * radius;
       const y = Math.sin(angle) * radius;
 

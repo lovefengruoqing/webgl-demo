@@ -1,3 +1,4 @@
+type AColorType = [number, number, number, number];
 
 export default class Rectangle {
   w: number;
@@ -8,11 +9,11 @@ export default class Rectangle {
 
   y: number;
 
-  color: [number, number, number, number];
+  color: AColorType;
 
   constructor(
     w: number = 10, h: number = 10, x: number = 0, y: number = 0,
-    color: [number, number, number, number] = [0, 0, 0, 1],
+    color: AColorType = [0, 0, 0, 1],
   ) {
     this.w = w;
     this.h = h;
@@ -23,16 +24,20 @@ export default class Rectangle {
 
   public getPosition() {
     const {
-      w, h,
+      w, h, x, y,
     } = this;
     return [
-      0, 0,
-      0, 0 + h,
-      0 + w, 0,
-      0, 0 + h,
-      0 + w, 0 + h,
-      0 + w, 0,
+      x, y,
+      x, y + h,
+      x + w, y,
+      x, y + h,
+      x + w, y + h,
+      x + w, y,
     ];
+  }
+
+  formatColor():AColorType {
+    return this.color.map((v, ind) => (ind === 3 ? v : v / 255)) as AColorType;
   }
 
   render(gl: WebGLRenderingContext) {

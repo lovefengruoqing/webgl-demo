@@ -6,6 +6,7 @@ import images from './images';
 import images2 from './images2';
 import matrix from './matrix';
 // import threeD from './3d';
+import translation from './translation';
 
 export default [
   { title: 'rotationCube', handler: rotationCube },
@@ -16,4 +17,5 @@ export default [
   { title: 'images2', handler: images2 },
   { title: 'matrix', handler: matrix },
   // { title: '3d', handler: threeD },
+  { title: 'translation', handler: translation },
 ];

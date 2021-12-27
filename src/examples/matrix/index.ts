@@ -1,7 +1,7 @@
 import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
 import FWord from '@/geometries/FWord';
-import m3 from '@/utils/m3';
+import { mat3 } from 'gl-matrix';
 import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
 
@@ -67,13 +67,13 @@ const render = (canvas: HTMLCanvasElement) => {
       positionAttributeLocation, size, type, normalize, stride, offset,
     );
 
-    // Compute the matrices
-    const projectionMatrix = m3.projection(
-      gl.canvas.width, gl.canvas.height,
+    const matrix = mat3.create();
+    mat3.projection(
+      matrix, gl.canvas.width, gl.canvas.height,
     );
-    let matrix = m3.translate(projectionMatrix, fWord.translationX, fWord.translationY);
-    matrix = m3.scale(matrix, fWord.scaleX, fWord.scaleY);
-    matrix = m3.rotate(matrix, fWord.rotation);
+    mat3.translate(matrix, matrix, [fWord.translationX, fWord.translationY]);
+    mat3.scale(matrix, matrix, [fWord.scaleX, fWord.scaleY]);
+    mat3.rotate(matrix, matrix, fWord.rotation);
 
     // Set the matrix.
     gl.uniformMatrix3fv(matrixUniformLocation, false, matrix);

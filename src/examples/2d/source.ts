@@ -1,13 +1,11 @@
 
 export const vertexShaderSource = `
 attribute vec2 a_position;
-uniform vec2 u_resolution;
-uniform vec2 u_translation;
+
+uniform mat3 u_matrix;
 
 void main() {
-  vec2 clipSpace = (a_position + u_translation) / u_resolution * 2.0 - 1.0;
-
-  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
 }`;
 
 export const fragmentShaderSource = `

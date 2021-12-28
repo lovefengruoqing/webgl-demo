@@ -1,5 +1,5 @@
 
-export default class FWord {
+export default class FWord3D {
   color: [number, number, number, number];
 
   translationX: number;

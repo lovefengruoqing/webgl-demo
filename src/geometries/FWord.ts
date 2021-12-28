@@ -1,5 +1,4 @@
-// import Rectangle from './Rectangle';
-
+type AColorType = [number, number, number, number];
 
 export default class FWord {
   color: [number, number, number, number];
@@ -62,6 +61,10 @@ export default class FWord {
       40, 60,
 
     ];
+  }
+
+  formatColor():AColorType {
+    return this.color.map((v, ind) => (ind === 3 ? v : v / 255)) as AColorType;
   }
 
   render(gl: WebGLRenderingContext) {

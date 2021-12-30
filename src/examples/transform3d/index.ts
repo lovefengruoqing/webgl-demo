@@ -94,9 +94,6 @@ const render = (canvas: HTMLCanvasElement) => {
 
     mat4.lookAt(cameraMatrix, cameraPosition, fPosition, up);
 
-    const viewMatrix = mat4.create();
-    mat4.invert(viewMatrix, cameraMatrix);
-
     const viewProjectionMatrix = mat4.create();
     mat4.multiply(viewProjectionMatrix, projectionMatrix, cameraMatrix);
 

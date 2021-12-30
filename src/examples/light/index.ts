@@ -1,6 +1,6 @@
 import { resize } from '@/utils';
 import MyGui from '@/utils/MyGui';
-import FWord from '@/geometries/FWord2';
+import FWord from '@/geometries/FWord3';
 import { mat4, vec3 } from 'gl-matrix';
 import { doPreparedWorked } from '../custom';
 import { fragmentShaderSource, vertexShaderSource } from './source';
@@ -12,9 +12,15 @@ const render = (canvas: HTMLCanvasElement) => {
 
   const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
   const normalAttributeLocation = gl.getAttribLocation(program, 'a_normal');
-  const matrixUniformLocation = gl.getUniformLocation(program, 'u_matrix');
-  const reverseLightDirectionUniformLocation = gl.getUniformLocation(program, 'u_reverseLightDirection');
+  const worldUniformLocation = gl.getUniformLocation(program, 'u_world');
+  const worldInverseTransposeUniformLocation = gl.getUniformLocation(program, 'u_worldInverseTranspose');
+  const worldViewProjectionUniformLocation = gl.getUniformLocation(program, 'u_worldViewProjection');
+  const lightWorldPositionUniformLocation = gl.getUniformLocation(program, 'u_lightWorldPosition');
+  const viewWorldPositionUniformLocation = gl.getUniformLocation(program, 'u_viewWorldPosition');
   const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+  const shininessUniformLocation = gl.getUniformLocation(program, 'u_shininess');
+  const lightColorUniformLocation = gl.getUniformLocation(program, 'u_lightColor');
+  const specularColorUniformLocation = gl.getUniformLocation(program, 'u_specularColor');
 
   gl.useProgram(program);
 
@@ -32,6 +38,7 @@ const render = (canvas: HTMLCanvasElement) => {
     translationX: -150,
     translationY: 0,
     translationZ: -360,
+    shininess: 150,
   };
 
   // 绘制场景
@@ -53,7 +60,7 @@ const render = (canvas: HTMLCanvasElement) => {
     const normalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
     fWord.setNormal(gl);
-    gl.vertexAttribPointer(normalAttributeLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
+    gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
     const { width, height } = canvas;
 
@@ -67,9 +74,6 @@ const render = (canvas: HTMLCanvasElement) => {
     const up: [number, number, number] = [0, 1, 0];
     const cameraMatrix = mat4.create();
     mat4.lookAt(cameraMatrix, camera, target, up);
-
-    const viewMatrix = mat4.create();
-    mat4.invert(viewMatrix, cameraMatrix);
 
     const viewProjectionMatrix = mat4.create();
     mat4.multiply(viewProjectionMatrix, projectionMatrix, cameraMatrix);
@@ -86,49 +90,62 @@ const render = (canvas: HTMLCanvasElement) => {
 
     // 变换矩阵
     gl.uniformMatrix4fv(
-      matrixUniformLocation, false, mat4.multiply(mat4.create(), viewProjectionMatrix, worldMatrix),
+      worldViewProjectionUniformLocation, false,
+      mat4.multiply(mat4.create(), viewProjectionMatrix, worldMatrix),
     );
+    gl.uniformMatrix4fv(worldInverseTransposeUniformLocation, false,
+      mat4.transpose(mat4.create(), mat4.invert(mat4.create(), worldMatrix)));
+    gl.uniformMatrix4fv(worldUniformLocation, false, worldMatrix);
+
+    gl.uniform3fv(lightWorldPositionUniformLocation, [20, 30, 60]);
+    gl.uniform3fv(viewWorldPositionUniformLocation, camera);
 
     gl.uniform4fv(colorUniformLocation, [0.2, 1, 0.2, 1]);
-    gl.uniform3fv(
-      reverseLightDirectionUniformLocation, vec3.normalize(vec3.create(), [0.5, 0.7, 1]),
-    );
+    gl.uniform1f(shininessUniformLocation, config.shininess);
+
+    // 设置光照颜色
+    gl.uniform3fv(lightColorUniformLocation, vec3.normalize(vec3.create(), [1, 0.6, 0.6])); // 红光
+    // 设置高光颜色
+    gl.uniform3fv(specularColorUniformLocation, vec3.normalize(vec3.create(), [1, 0.2, 0.2])); // 红光
 
     gl.drawArrays(gl.TRIANGLES, 0, 6 * 16);
   };
 
   drawScene();
 
-  // gui.addColor(fWord, 'color').onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'translationX', 0, gl.canvas.width).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'translationY', 0, gl.canvas.height).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'translationZ', -1000, 1000).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'rotationX', -Math.PI, Math.PI, 0.01).onChange(() => {
-  //   drawScene();
-  // });
+  gui.addColor(fWord, 'color').onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'translationX', 0, gl.canvas.width).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'translationY', 0, gl.canvas.height).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'translationZ', -1000, 1000).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'rotationX', -Math.PI, Math.PI, 0.01).onChange(() => {
+    drawScene();
+  });
   gui.add(config, 'rotationY', -Math.PI, Math.PI, 0.01).onChange(() => {
     drawScene();
   });
-  // gui.add(config, 'rotationZ', -Math.PI, Math.PI, 0.01).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'scaleX', -10, 10, 0.01).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'scaleY', -10, 10, 0.01).onChange(() => {
-  //   drawScene();
-  // });
-  // gui.add(config, 'scaleZ', -10, 10, 0.01).onChange(() => {
-  //   drawScene();
-  // });
+  gui.add(config, 'rotationZ', -Math.PI, Math.PI, 0.01).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'scaleX', -10, 10, 0.01).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'scaleY', -10, 10, 0.01).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'scaleZ', -10, 10, 0.01).onChange(() => {
+    drawScene();
+  });
+  gui.add(config, 'shininess', 1, 300, 0.01).onChange(() => {
+    drawScene();
+  });
 };
 
 const dispose = () => {

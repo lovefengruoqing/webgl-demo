@@ -8,6 +8,7 @@ import matrix from './matrix';
 import transform2d from './2d';
 import transform3d from './transform3d';
 import light from './light';
+import light2 from './light2';
 
 export default [
   { title: 'rotationCube', handler: rotationCube },
@@ -20,4 +21,5 @@ export default [
   { title: 'transform2d', handler: transform2d },
   { title: 'transform3d', handler: transform3d },
   { title: 'light', handler: light },
+  { title: 'light2', handler: light2 },
 ];

@@ -1,20 +1,27 @@
-
-export const vetexShaderSource = `
-// an attribute will receive data from a buffer
+export const vertexShaderSource = `
 attribute vec2 a_position;
-uniform vec2 u_resolution;
+
+uniform mat3 u_matrix;
+
+varying vec4 v_color;
 
 void main() {
-  vec2 clipSpace = a_position / u_resolution * 2.0 - 1.0;
+  // Multiply the position by the matrix.
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
 
-  gl_Position = vec4(clipSpace, 0, 1);
-}`;
+  // Convert from clipspace to colorspace.
+  // Clipspace goes -1.0 to +1.0
+  // Colorspace goes from 0.0 to 1.0
+  v_color = gl_Position * 0.5 + 0.5;
+}
+`;
 
 export const fragmentShaderSource = `
 precision mediump float;
 
-uniform vec4 u_color;
+varying vec4 v_color;
 
 void main() {
-  gl_FragColor = u_color;
-}`;
+  gl_FragColor = v_color;
+}
+`;

@@ -1,12 +1,12 @@
 
 import {
-  resize, loadTextures,
+  resize, loadTexture,
 } from '@/utils/';
 import { mat4 } from 'gl-matrix';
 import huaji from '@/assets/huaji.png';
-import { vetexShaderSource, fragmentShaderSource } from './source';
+import MyGui from '@/utils/MyGui';
+import { vertexShaderSource, fragmentShaderSource } from './source';
 import { doPreparedWorked } from '../custom';
-// import { GUI } from 'dat.gui'
 
 type ProgramInfo = {
   program: WebGLProgram;
@@ -28,6 +28,7 @@ type buffersInfo = {
   indices: WebGLBuffer;
 }
 
+const { gui } = MyGui;
 
 const initBuffer = (gl: WebGLRenderingContext) => {
   const pList = [
@@ -297,11 +298,49 @@ const drawScene = (
   }
 };
 
+class TexturePool {
+  map: Map<string, WebGLTexture> = new Map();
+
+  urls: Array<string>;
+
+  gl: WebGLRenderingContext;
+
+  public cur: string | undefined;
+
+  constructor(gl: WebGLRenderingContext, urls: Array<string>) {
+    this.gl = gl;
+
+    this.urls = urls;
+
+    [this.cur] = this.urls;
+
+    urls.map(async (url) => {
+      const texture = await loadTexture(gl, url);
+      this.map.set(url, texture);
+    });
+  }
+
+  async add(url: string) {
+    const texture = await loadTexture(this.gl, url);
+    this.map.set(url, texture);
+    this.urls.push(url);
+    return texture;
+  }
+
+  getCurTexture(): WebGLTexture {
+    return this.map.get(this.cur);
+  }
+
+  getRandom(): WebGLTexture {
+    const rn = Math.floor(Math.random() * this.urls.length);
+    return this.map.get(this.urls[rn]);
+  }
+}
 
 const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => {
   const {
     gl, program,
-  } = doPreparedWorked({ canvas, vetexShaderSource, fragmentShaderSource });
+  } = doPreparedWorked({ canvas, vertexShaderSource, fragmentShaderSource });
 
   const programInfo: ProgramInfo = {
     program,
@@ -320,10 +359,12 @@ const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => 
   const buffers = initBuffer(gl);
 
   const url = 'https://cn.bing.com/th?id=OHR.LionSurfing_ZH-CN7369892268_UHD.jpg&pid=hp&w=3840&h=2160&rs=1&c=4&r=0';
-  // const url = 'https://www.baidu.com/img/flexible/logo/pc/result@2.png';
-  const textures = await loadTextures(gl, [huaji, url]);
+  const texturePool = new TexturePool(gl, [huaji, url]);
 
-  let texture = textures[Math.random() > 0.9 ? 0 : 1];
+  MyGui.dispose();
+  gui.add(texturePool, 'cur', texturePool.urls);
+
+  let texture = texturePool.getCurTexture();
 
   if (autoRotate) {
     let prev: number | null = null;
@@ -335,7 +376,7 @@ const render = async (canvas: HTMLCanvasElement, autoRotate: boolean = true) => 
       if (!prev) prev = timestamp;
       const progress = (timestamp - prev) / 1000;
       prev = timestamp;
-      texture = textures[bool ? 0 : 1];
+      texture = texturePool.getCurTexture();
       drawScene(gl, programInfo, buffers, progress, texture);
       requestAnimationFrame(doRotate);
     };
